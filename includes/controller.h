@@ -1,8 +1,15 @@
 #pragma once
 
-#include "SDL2/SDL.h"
+#include "interface_manager.h"
 
 #define FPS 30
 
-
-void GameLoop();
+class Controller{
+    public:
+        Controller();
+        void GameLoop();
+    
+    private:
+        bool exitB = false;
+        InterfaceManager *interfaceManager;
+};

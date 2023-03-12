@@ -1,9 +1,16 @@
 #include "game_interface.h"
 
-void EventGameInterface(SDL_Event *e){
+GameInterface::GameInterface(){
+
+}
+GameInterface::~GameInterface(){
+
+}
+
+void GameInterface::TreatEvents(){
     
 }
 
-void DrawGameInterface(SDL_Renderer *renderer){
-    
+void GameInterface::Draw(){
+
 }

@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <iostream>
 
 #include <SDL2/SDL.h>
 
@@ -10,15 +10,15 @@
 
 int main(int agrc , char *argv[]){
 
-    printf("Starting...");
+    std::cout << "Starting..." << std::endl;
 
     if(SDL_Init(SDL_INIT_VIDEO) < 0){
-        fprintf(stderr, "Error (SDL_Init) : %s\n", SDL_GetError());
+       std::cerr << "Error (SDL_Init) : " << SDL_GetError() << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    CreateInterface();
-    GameLoop();
+    Controller controller;
+    controller.GameLoop();
 
     return EXIT_SUCCESS;
 }

@@ -1,6 +1,13 @@
 #pragma once
 
-#include "SDL2/SDL.h"
+#include "interface.h"
 
-void EventGameInterface(SDL_Event *e);
-void DrawGameInterface(SDL_Renderer *renderer);
+class GameInterface : public Interface {
+
+    public:
+        GameInterface();
+        ~GameInterface();
+
+        void TreatEvents();
+        void Draw();
+};

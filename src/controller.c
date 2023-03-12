@@ -6,11 +6,13 @@
 #include <time.h>
 #include <math.h>
 #include <synchapi.h>
-#include <stdio.h>
+#include <iostream>
 
-static bool exitB = false;
+Controller::Controller(){
+    interfaceManager = new InterfaceManager();
+}
 
-void GameLoop(){
+void Controller::GameLoop(){
 
     while(!exitB){
 
@@ -18,8 +20,9 @@ void GameLoop(){
 
         clock_t tStart = clock();
 
-        TreatEvents();
-        DrawInterface();
+        Interface *currentInterface = interfaceManager->GetCurrentInterface();
+        currentInterface->TreatEvents();
+        currentInterface->Draw();
 
         clock_t tEnd = clock();
         float iterDuration = (tEnd - tStart) / CLOCKS_PER_SEC;
@@ -28,3 +31,4 @@ void GameLoop(){
         }
     }
 }
+
