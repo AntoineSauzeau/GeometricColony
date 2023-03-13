@@ -1,4 +1,4 @@
-#include "game_interface.h"
+#include "game_interface.hpp"
 
 GameInterface::GameInterface(){
 

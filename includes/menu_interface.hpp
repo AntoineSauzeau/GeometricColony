@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SDL2/SDl.h"
+#include "SDL2/SDL.h"
 
-#include "interface.h"
+#include "interface.hpp"
 
 class MenuInterface : public Interface {
 

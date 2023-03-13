@@ -1,6 +1,6 @@
 #pragma once
 
-#include "interface_manager.h"
+#include "interface_manager.hpp"
 
 #define FPS 30
 

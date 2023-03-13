@@ -1,6 +1,6 @@
-#include "controller.h" 
+#include "controller.hpp" 
 
-#include "interface.h"
+#include "interface.hpp"
 
 #include <stdbool.h>
 #include <time.h>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interface.h"
-#include "menu_interface.h"
-#include "game_interface.h"
+#include "interface.hpp"
+#include "menu_interface.hpp"
+#include "game_interface.hpp"
 
 class InterfaceManager{
 

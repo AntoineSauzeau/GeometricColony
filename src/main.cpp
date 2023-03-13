@@ -5,8 +5,8 @@
 
 #include <SDL2/SDL.h>
 
-#include "interface.h"
-#include "controller.h"
+#include "interface.hpp"
+#include "controller.hpp"
 
 int main(int agrc , char *argv[]){
 

@@ -1,4 +1,4 @@
-#include "menu_interface.h"
+#include "menu_interface.hpp"
 
 MenuInterface::MenuInterface(SDL_Window *window, SDL_Renderer *renderer){
     this->window = window;
