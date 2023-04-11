@@ -1,12 +1,15 @@
 import json
 import pickle
 from tilemap import Tilemap
+from tileset import Tileset
 
 class Room:
 
     def __init__(self, name, width, height):
         self.tilemap = Tilemap(width, height)
+        self.tilesets = []
         self.name = name
+        self.spawnPos = (0, 0)
 
     def Save(self, filePath):
         data = {}
@@ -26,6 +29,9 @@ class Room:
         file.write(str(data))
 
         file.close()
+
+    def AddTileset(self, filename):
+        self.tilesets.append(Tileset(filename))
     
 def LoadFromFile(path):
     file = open(path, "r")
@@ -35,10 +41,12 @@ def LoadFromFile(path):
     room = Room(content["name"], content["width"], content["height"])
 
     for tilesetName in content["tilesets"]:
-        room.tilemap.AddTileset(tilesetName)
+        room.AddTileset(tilesetName)
 
     room.tilemap.array = content["tilemap"]
 
     return room
+
+    
 
 

@@ -5,6 +5,8 @@ from tkinter import filedialog
 import room as roomM
 import tileset as tilesetM
 from enum import IntEnum
+import lib_game_dev.button as buttonM
+import lib_game_dev.text_switch_widget as tswM
 
 class Direction(IntEnum):
     LEFT=0
@@ -13,15 +15,18 @@ class Direction(IntEnum):
     DOWN=3
 
 BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREY = (52, 73, 94, 1.0)
 
 N_TILESET_CASE_X = 7
 N_TILEMAP_CASE_X = 20
-N_CASE_Y = 20
+N_TILESET_CASE_Y = 15
+N_TILEMAP_CASE_Y = 20
 TILESET_PART_WIDTH=N_TILESET_CASE_X*tilesetM.SPRITE_SIZE
 TILEMAP_PART_WIDTH=N_TILEMAP_CASE_X*tilesetM.SPRITE_SIZE
 HEADER_HEIGHT=50
 WINDOW_WIDTH=TILEMAP_PART_WIDTH+3+TILESET_PART_WIDTH
-WINDOW_HEIGHT=HEADER_HEIGHT+N_CASE_Y*tilesetM.SPRITE_SIZE
+WINDOW_HEIGHT=HEADER_HEIGHT+N_TILEMAP_CASE_Y*tilesetM.SPRITE_SIZE
 
 running = True
 tilesetIndex = 0
@@ -29,6 +34,12 @@ tilesetScrollIndex = 0
 cameraX = 0
 cameraY = 0
 spriteSelected = None
+
+lTsw = []
+tswMode = tswM.TextSwitchWidget(25, (WINDOW_WIDTH-120, 23), ["Mode 1"])
+tswTileset = tswM.TextSwitchWidget(20, (WINDOW_WIDTH-120, WINDOW_HEIGHT-60), [])
+lTsw.append(tswMode)
+lTsw.append(tswTileset)
 
 pygame.init()
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -41,6 +52,7 @@ root.withdraw()
 
 room = None
 
+
 def MouseOnWindow(x, y):
     return x > 0 and x < WINDOW_WIDTH-1 and y > HEADER_HEIGHT and y < WINDOW_HEIGHT-1
 
@@ -51,15 +63,16 @@ def MouseInTilesetPart(x, y):
     return x >= TILEMAP_PART_WIDTH and MouseOnWindow(x, y)
 
 def AddTileset():
-    filePath = filedialog.askopenfilename()
-    if filePath == None:
+    filename = filedialog.askopenfilename()
+    if filename == '':
         return
-    room.tilemap.AddTileset(filePath)
-    print(filePath)
+    room.AddTileset(filename)
+    tswTileset.add_value(filename)
+    print(filename)
 
 def Save():
     filePath = filedialog.asksaveasfilename()
-    if filePath == None:
+    if filePath == '':
         return
     room.Save(filePath)
 
@@ -70,6 +83,8 @@ def LoadRoomFromFile():
     if filePath == '':
         return
     room = roomM.LoadFromFile(filePath)
+    for tileset in room.tilesets:
+        tswTileset.add_value(tileset.name)
     print(filePath)
 
 def CreateNewRoom():
@@ -90,7 +105,7 @@ def MoveCamera(dir):
         cameraX += 1
     elif(dir == Direction.UP and cameraY-1 >= 0):
         cameraY -= 1
-    elif(dir == Direction.DOWN and cameraY+N_CASE_Y <= room.tilemap.height):
+    elif(dir == Direction.DOWN and cameraY+N_TILEMAP_CASE_Y <= room.tilemap.height):
         cameraY += 1
 
 def ScrollTileset():
@@ -98,10 +113,11 @@ def ScrollTileset():
 
 def MouseButtonUp(event):
 
+    global spriteSelected
+    global tilesetIndex
+
     if room == None or not(MouseOnWindow(event.pos[0], event.pos[1])):
         return
-
-    global spriteSelected
 
     if(MouseInTilesetPart(event.pos[0], event.pos[1])):
         caseX = (event.pos[0] - TILEMAP_PART_WIDTH) // tilesetM.SPRITE_SIZE
@@ -124,6 +140,16 @@ def MouseButtonUp(event):
                 print(room.tilemap.array[caseY][caseX])
                 room.tilemap.array[caseY][caseX] = spriteSelected
 
+        for tsw in lTsw:
+            newIndex = -1
+            if(tsw.in_arrow_left_bounds(event.pos[0], event.pos[1])):
+                newIndex = tsw.previous()
+            elif(tsw.in_arrow_right_bounds(event.pos[0], event.pos[1])):
+                newIndex = tsw.next()
+
+            if(tsw == tswTileset and newIndex != -1):
+                tilesetIndex = newIndex
+
     elif event.button == pygame.BUTTON_RIGHT:
         if MouseInTilemapPart(event.pos[0], event.pos[1]):
             room.tilemap.array[caseY][caseX] = (-1, -1)
@@ -132,8 +158,6 @@ def MouseButtonUp(event):
         if MouseInTilemapPart(event.pos[0], event.pos[1]):
             spriteSelected = room.tilemap.array[caseY][caseX]
 
-    elif event.button == pygame.BUTTON_RIGHT:
-        pass
 
 def KeyDownTilemap(event):
     print("Tilemap")
@@ -171,7 +195,7 @@ def KeyDown(event):
 
 def DrawTilemap():
 
-    tilesets = room.tilemap.tilesets
+    tilesets = room.tilesets
     for l in range(room.tilemap.height):
         for c in range(room.tilemap.width):
             (spriteIndex, spriteTilesetIndex) = room.tilemap.array[l][c]
@@ -183,18 +207,18 @@ def DrawTilemap():
             if spriteIndex < len(lSprite):
                 screen.blit(lSprite[spriteIndex], ((cameraX + c) * tilesetM.SPRITE_SIZE, (cameraY+l) * tilesetM.SPRITE_SIZE + HEADER_HEIGHT))
     
-    for l in range(N_CASE_Y):
+    for l in range(N_TILEMAP_CASE_Y):
         for c in range(N_TILEMAP_CASE_X):
             pygame.draw.rect(screen, BLACK, (c * tilesetM.SPRITE_SIZE, l * tilesetM.SPRITE_SIZE + HEADER_HEIGHT, tilesetM.SPRITE_SIZE, tilesetM.SPRITE_SIZE), 1)
 
 
 def DrawTileset():
-    if(len(room.tilemap.tilesets) == 0):
+    if(len(room.tilesets) == 0):
         return 
 
-    usedTileset = room.tilemap.tilesets[tilesetIndex]
+    usedTileset = room.tilesets[tilesetIndex]
     firstSpriteIndex = tilesetScrollIndex*N_TILESET_CASE_X
-    for i in range(firstSpriteIndex, min(len(usedTileset.lSprite), firstSpriteIndex+N_CASE_Y*N_TILESET_CASE_X)):
+    for i in range(firstSpriteIndex, min(len(usedTileset.lSprite), firstSpriteIndex+N_TILESET_CASE_Y*N_TILESET_CASE_X)):
          
         xI = i % N_TILESET_CASE_X
         yI = i // N_TILESET_CASE_X
@@ -204,9 +228,17 @@ def DrawTileset():
         sprite = usedTileset.lSprite[i]
         screen.blit(sprite, (x, y, tilesetM.SPRITE_SIZE, tilesetM.SPRITE_SIZE))
 
+    pygame.draw.rect(screen, GREY, (TILEMAP_PART_WIDTH+3, WINDOW_HEIGHT-100, WINDOW_WIDTH, WINDOW_HEIGHT))
+    tswTileset.draw(screen)
+
 def DrawHeader():
-    textRoomName = font_28.render(room.name, True, BLACK)
+    pygame.draw.rect(screen, GREY, (0, 0, WINDOW_WIDTH, HEADER_HEIGHT))
+    pygame.draw.line(screen, BLACK, (0, HEADER_HEIGHT-2), (WINDOW_WIDTH, HEADER_HEIGHT-2), 3)
+    pygame.draw.line(screen, BLACK, (TILEMAP_PART_WIDTH+1, HEADER_HEIGHT), (TILEMAP_PART_WIDTH+1, WINDOW_HEIGHT), 3)
+
+    textRoomName = font_28.render(room.name, True, WHITE)
     screen.blit(textRoomName, (10, 17))
+    tswMode.draw(screen)
 
 def Draw():
     screen.fill((255, 255, 255))
